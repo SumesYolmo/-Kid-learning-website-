@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kids Learning Hub 🚀</title>
+    
+    <style>
+        /* --- CSS STYLES --- */
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background-color: #f0f8ff;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        header {
+            background-color: #ff6347;
+            color: white;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        main {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .subjects-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .subject-card {
+            background-color: white;
+            border: 3px solid #ffa500;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px;
+            width: 30%;
+            min-width: 250px;
+            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s;
+        }
+
+        .subject-card:hover {
+            transform: translateY(-5px);
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: #45a049;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        #resetBtn {
+            background-color: #f44336; /* Red for reset */
+            margin-top: 20px;
+        }
+        #resetBtn:hover {
+            background-color: #d32f2f;
+        }
+
+        .option-btn {
+            display: block;
+            width: 80%;
+            margin: 10px auto;
+        }
+
+        .progress-container {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px dashed #00bfff;
+            border-radius: 10px;
+            background-color: #e0ffff;
+        }
+
+        #progressBarContainer {
+            width: 90%;
+            background-color: #ddd;
+            border-radius: 10px;
+            margin: 10px auto;
+            overflow: hidden;
+        }
+
+        #progressBar {
+            width: 0%;
+            height: 30px;
+            background-color: #008080;
+            text-align: center;
+            line-height: 30px;
+            color: white;
+            font-weight: bold;
+            transition: width 0.5s ease-in-out;
+        }
+
+        #contentArea {
+            background-color: #fffacd;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 20px;
+            text-align: left;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            padding: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Welcome to the Learning Hub! 🧠</h1>
+        <p>Choose a subject to learn and test your knowledge. You can switch courses at any time!</p>
+    </header>
+
+    <main>
+        <section class="progress-container">
+            <h2>Your Progress:</h2>
+            <div id="progressBarContainer">
+                <div id="progressBar">0%</div>
+            </div>
+            <p id="progressText">Quizzes Completed: 0/3</p>
+            <button id="resetBtn" onclick="resetProgress()">Reset Progress 🔄</button>
+        </section>
+        
+        <section class="subjects-container">
+            <h2>Subjects</h2>
+            
+            <div class="subject-card" data-subject="grammar">
+                <h3>Grammar 📖</h3>
+                <p>Lesson content on nouns, verbs, and punctuation.</p>
+                <button onclick="showContent('grammar')">Start Learning</button>
+            </div>
+
+            <div class="subject-card" data-subject="math">
+                <h3>Math ➕</h3>
+                <p>Lesson content on addition, subtraction, and patterns.</p>
+                <button onclick="showContent('math')">Start Learning</button>
+            </div>
+
+            <div class="subject-card" data-subject="science">
+                <h3>Science 🧪</h3>
+                <p>Lesson content on the human body, animals, and nature.</p>
+                <button onclick="showContent('science')">Start Learning</button>
+            </div>
+        </section>
+
+        <section id="contentArea" class="hidden">
+            <h2 id="contentTitle"></h2>
+            <div id="lessonContent"></div>
+            
+            <div id="quizContainer" class="hidden">
+                </div>
+
+            <button onclick="startQuiz()" id="startQuizBtn">Start Quiz</button>
+            <button onclick="goHome()">Go Home</button>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Kids Learning Hub</p>
+    </footer>
+
+    <script>
+        // --- JAVASCRIPT LOGIC ---
+
+        // --- Global Data ---
+        const totalQuizzes = 3;
+        let quizzesCompleted = {
+            grammar: false,
+            math: false,
+            science: false
+        };
+        let currentSubject = null;
+        let currentQuestionIndex = 0;
+        let userScore = 0;
+
+        // Separate Quiz Data
+        const quizData = {
+            grammar: [
+                { question: "Which word is a Noun (a person, place, or thing)?", options: ["Jump", "Blue", "House"], answer: "House" },
+                { question: "What is the past tense of 'Go'?", options: ["Goed", "Went", "Gone"], answer: "Went" },
+                { question: "Which word is an Adjective (describes a noun)?", options: ["Sing", "Big", "Loudly"], answer: "Big" },
+                { question: "Which punctuation mark ends a question?", options: ["Period (.)", "Exclamation Mark (!)", "Question Mark (?)"], answer: "Question Mark (?)" },
+                { question: "Which of these is a Verb (an action word)?", options: ["Tree", "Slow", "Read"], answer: "Read" }
+            ],
+            math: [
+                { question: "What is 7 + 4?", options: ["10", "11", "12"], answer: "11" },
+                { question: "What is 15 - 5?", options: ["9", "10", "11"], answer: "10" },
+                { question: "What is 3 x 5?", options: ["12", "15", "18"], answer: "15" },
+                { question: "What is the next number in this pattern: 2, 4, 6, 8, __?", options: ["9", "10", "11"], answer: "10" },
+                { question: "If you have 8 apples and give 3 away, how many are left?", options: ["4", "5", "6"], answer: "5" }
+            ],
+            science: [
+                { question: "What is the largest organ in the human body?", options: ["Heart", "Brain", "Skin"], answer: "Skin" },
+                { question: "Which bird cannot fly?", options: ["Eagle", "Penguin", "Sparrow"], answer: "Penguin" },
+                { question: "What gas do plants take in from the air?", options: ["Oxygen", "Carbon Dioxide", "Nitrogen"], answer: "Carbon Dioxide" },
+                { question: "What is solid water called?", options: ["Mist", "Steam", "Ice"], answer: "Ice" },
+                { question: "How many legs does a spider have?", options: ["Six", "Eight", "Ten"], answer: "Eight" }
+            ]
+        };
+
+        // --- DOM Element References (Initial) ---
+        const subjectsContainer = document.querySelector('.subjects-container');
+        const contentArea = document.getElementById('contentArea');
+        const contentTitle = document.getElementById('contentTitle');
+        const lessonContent = document.getElementById('lessonContent');
+        const quizContainer = document.getElementById('quizContainer');
+        const startQuizBtn = document.getElementById('startQuizBtn');
+
+        // References to buttons inside quizContainer must be dynamic as they are re-created
+        let questionEl, optionsEl, quizFeedback, nextQuestionBtn, finishQuizBtn;
+
+        // Function to initialize/re-initialize quiz element references
+        function setupQuizElements() {
+            quizContainer.innerHTML = `
+                <h3>Quiz Time!</h3>
+                <p id="question"></p>
+                <div id="options"></div>
+                <p id="quizFeedback"></p>
+                <button id="nextQuestionBtn" class="hidden" onclick="nextQuestion()">Next Question</button>
+                <button id="finishQuizBtn" class="hidden" onclick="showQuizResult()">Finish Quiz</button>
+            `;
+            // Re-assign element references after innerHTML change
+            questionEl = document.getElementById('question');
+            optionsEl = document.getElementById('options');
+            quizFeedback = document.getElementById('quizFeedback');
+            nextQuestionBtn = document.getElementById('nextQuestionBtn');
+            finishQuizBtn = document.getElementById('finishQuizBtn');
+        }
+
+        // Fisher-Yates (Knuth) Shuffle Algorithm
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+
+        // --- Functions ---
+
+        // 1. Progress Bar Update
+        function updateProgressBar() {
+            let completedCount = Object.values(quizzesCompleted).filter(isCompleted => isCompleted).length;
+            const percentage = (completedCount / totalQuizzes) * 100;
+
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = percentage + '%';
+            progressBar.textContent = Math.round(percentage) + '%';
+
+            document.getElementById('progressText').textContent = `Quizzes Completed: ${completedCount}/${totalQuizzes}`;
+        }
+
+        // 2. Reset All Progress
+        function resetProgress() {
+            if (confirm("Are you sure you want to reset all quiz progress?")) {
+                quizzesCompleted = {
+                    grammar: false,
+                    math: false,
+                    science: false
+                };
+                updateProgressBar();
+
+                // Reset subject card borders and buttons
+                document.querySelectorAll('.subject-card').forEach(card => {
+                    card.style.borderColor = '#ffa500'; // Reset to orange
+                });
+
+                // If currently on a subject page, refresh the content
+                if (!contentArea.classList.contains('hidden')) {
+                    showContent(currentSubject);
+                }
+            }
+        }
+
+        // 3. Display Lesson Content
+        function showContent(subject) {
+            currentSubject = subject;
+            subjectsContainer.classList.add('hidden');
+            contentArea.classList.remove('hidden');
+
+            contentTitle.textContent = subject.charAt(0).toUpperCase() + subject.slice(1);
+            quizContainer.classList.add('hidden');
+            lessonContent.classList.remove('hidden');
+            
+            const totalQ = quizData[subject].length;
+            const passingScore = Math.ceil(totalQ * 0.7);
+            
+            // Set dummy lesson content
+            lessonContent.innerHTML = `<p>Welcome to the **${contentTitle.textContent}** lesson!</p>
+                <p>There are **${totalQ}** questions in this quiz. A passing score is **${passingScore}/${totalQ}** or better!</p>
+                <p>*(This is placeholder content for learning materials)*</p>`;
+            
+            // Update the start button status
+            if (quizzesCompleted[subject]) {
+                startQuizBtn.textContent = "Quiz Completed! ✅ (Play Again)";
+            } else {
+                startQuizBtn.textContent = "Start Quiz";
+            }
+            startQuizBtn.disabled = false; // Always allow replay/start
+        }
+
+        // 4. Quiz Start
+        function startQuiz() {
+            setupQuizElements(); // Reset and re-reference quiz area
+            
+            currentQuestionIndex = 0;
+            userScore = 0;
+            
+            // Shuffle the questions for the current subject before starting
+            shuffleArray(quizData[currentSubject]);
+
+            lessonContent.classList.add('hidden');
+            quizContainer.classList.remove('hidden');
+            startQuizBtn.classList.add('hidden');
+
+            loadQuestion();
+        }
+
+        // 5. Load a Question
+        function loadQuestion() {
+            const quiz = quizData[currentSubject];
+            if (currentQuestionIndex >= quiz.length) {
+                showQuizResult();
+                return;
+            }
+
+            const currentQ = quiz[currentQuestionIndex];
+            questionEl.textContent = `Q${currentQuestionIndex + 1}: ${currentQ.question}`;
+            optionsEl.innerHTML = '';
+            quizFeedback.textContent = '';
+            nextQuestionBtn.classList.add('hidden');
+
+            // Shuffle options for extra randomization
+            const shuffledOptions = shuffleArray([...currentQ.options]); 
+            
+            shuffledOptions.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'option-btn';
+                button.textContent = option;
+                button.onclick = () => checkAnswer(option, currentQ.answer);
+                optionsEl.appendChild(button);
+            });
+        }
+
+        // 6. Check Answer
+        function checkAnswer(selectedOption, correctAnswer) {
+            const optionButtons = document.querySelectorAll('#options .option-btn');
+            
+            // Disable all options after selection
+            optionButtons.forEach(btn => {
+                btn.disabled = true;
+                if (btn.textContent === selectedOption) {
+                    if (selectedOption === correctAnswer) {
+                        btn.style.backgroundColor = '#4CAF50';
+                        userScore++;
+                        quizFeedback.textContent = 'Correct! 🎉';
+                    } else {
+                        btn.style.backgroundColor = '#f44336';
+                        quizFeedback.textContent = `Incorrect. The answer was ${correctAnswer}.`;
+                    }
+                } else if (btn.textContent === correctAnswer) {
+                    btn.style.border = '3px solid #4CAF50';
+                    btn.style.backgroundColor = '#66bb6a';
+                }
+            });
+
+            // Show the appropriate button to proceed
+            if (currentQuestionIndex < quizData[currentSubject].length - 1) {
+                nextQuestionBtn.classList.remove('hidden');
+            } else {
+                finishQuizBtn.classList.remove('hidden');
+            }
+        }
+
+        // 7. Next Question (Called by onclick event)
+        function nextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        // 8. Show Quiz Result (Called by onclick event)
+        function showQuizResult() {
+            const totalQuestions = quizData[currentSubject].length;
+            const passingScore = Math.ceil(totalQuestions * 0.7); // 70% or higher
+            let message = `You scored **${userScore}** out of ${totalQuestions}.`;
+            const card = document.querySelector(`.subject-card[data-subject="${currentSubject}"]`);
+
+            if (userScore >= passingScore) { 
+                message += ` Great job! You passed this quiz with a score of ${userScore}! ✅`;
+                if (!quizzesCompleted[currentSubject]) {
+                    quizzesCompleted[currentSubject] = true;
+                    updateProgressBar();
+                    card.style.borderColor = '#4CAF50'; // Turn border green for completion
+                }
+            } else {
+                message += ` Keep practicing! You need ${passingScore} to pass. 😥`;
+            }
+
+            // Replace quiz area content with result message
+            quizContainer.innerHTML = `<h3>Quiz Finished!</h3><p>${message}</p>
+                <button onclick="startQuiz()">Play Again</button>`;
+        }
+
+        // 9. Go Home Button
+        function goHome() {
+            subjectsContainer.classList.remove('hidden');
+            contentArea.classList.add('hidden');
+            
+            // Ensure the quiz area is reset for the next time
+            setupQuizElements(); 
+        }
+
+        // --- Initial Setup ---
+        document.addEventListener('DOMContentLoaded', () => {
+            setupQuizElements(); // Initial setup of quiz elements
+            updateProgressBar();
+        });
+    </script>
+</body>
+</html>
